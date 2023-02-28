@@ -1,0 +1,4 @@
+@EndUserText.label: 'Travel'
+define service ZCOL_SD_TRAVEL {
+  expose ZCOL_C_TRAVEL as Travel;
+}
