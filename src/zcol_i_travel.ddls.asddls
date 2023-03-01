@@ -21,13 +21,13 @@ define root view entity zcol_i_travel
       description    as Description,
       overall_status as OverallStatus,
       @Semantics.user.createdBy: true
-      createdby      as Createdby,
+      createdby      as CreatedBy,
       @Semantics.systemDateTime.createdAt: true
-      createdat      as Createdat,
+      createdat      as CreatedAt,
       @Semantics.user.lastChangedBy: true
-      lastchangedby  as Lastchangedby,
+      lastchangedby  as LastChangedBy,
       @Semantics.systemDateTime.lastChangedAt: true
-      lastchangedat  as Lastchangedat,
+      lastchangedat  as LastChangedAt,
       _Booking,
       _Agency,
       _Customer,

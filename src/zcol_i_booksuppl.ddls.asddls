@@ -23,7 +23,7 @@ define view entity zcol_i_booksuppl
       price                 as Price,
       currency_code         as CurrencyCode,
       @Semantics.systemDateTime.lastChangedAt: true
-      last_changed_at       as LastChangeAt,
+      last_changed_at       as LastChangedAt,
       _Travel,
       _Booking,
       _Product,

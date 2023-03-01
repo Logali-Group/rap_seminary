@@ -17,7 +17,7 @@ annotate entity ZCOL_C_TRAVEL_A with
                type: #LINEITEM_REFERENCE,
                label: 'Booking',
                position: 20,
-               targetQualifier: '_Booking' }],
+               targetElement: '_Booking' }],
 
       lineItem: [{ position: 10,
                    importance: #HIGH}],
@@ -99,5 +99,5 @@ annotate entity ZCOL_C_TRAVEL_A with
   Description;
 
   @UI.hidden: true
-  Lastchangedat;
+  LastChangedAt;
 }

@@ -9,11 +9,11 @@
 }
 define view entity zcol_i_booking
   as select from zcol_booking
-  association        to parent zcol_i_travel as _Travel     on  $projection.TravelId = _Travel.TravelId
-  composition [0..*] of zcol_i_booksuppl     as _BookSupplement
-  association [1..1] to /DMO/I_Customer      as _Customer   on  $projection.CustomerId = _Customer.CustomerID
-  association [1..1] to /DMO/I_Carrier       as _Carrier    on  $projection.CarrierId = _Carrier.AirlineID
-  association [1..1] to /DMO/I_Connection    as _Connection on  $projection.CarrierId    = _Connection.AirlineID
+  composition [0..*] of zcol_i_booksuppl  as _BookSupplement
+  association        to parent zcol_i_travel     as _Travel on  $projection.TravelId = _Travel.TravelId
+  association [1..1] to /DMO/I_Customer   as _Customer      on  $projection.CustomerId = _Customer.CustomerID
+  association [1..1] to /DMO/I_Carrier    as _Carrier       on  $projection.CarrierId = _Carrier.AirlineID
+  association [1..1] to /DMO/I_Connection as _Connection    on  $projection.CarrierId    = _Connection.AirlineID
                                                             and $projection.ConnectionId = _Connection.ConnectionID
 {
   key travel_id       as TravelId,

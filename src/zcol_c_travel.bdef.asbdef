@@ -1,0 +1,33 @@
+projection;
+//strict ( 2 );
+
+define behavior for ZCOL_C_TRAVEL alias Travel
+{
+  use create;
+  use update;
+  use delete;
+
+  use action acceptTravel;
+  use action rejectTravel;
+  use action createTravelByTemplate;
+
+  use association _Booking { create; }
+}
+
+define behavior for ZCOL_C_BOOKING alias Booking
+{
+  use update;
+  use delete;
+
+  use association _Travel;
+  use association _BookSupplement { create; }
+}
+
+define behavior for ZCOL_C_BOOKSUPPL alias BookingSupplement
+{
+  use update;
+  use delete;
+
+  use association _Travel;
+  use association _Booking;
+}

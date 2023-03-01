@@ -13,7 +13,7 @@ define view entity ZCOL_C_BOOKSUPPL
       @Semantics.amount.currencyCode: 'CurrencyCode'
       Price,
       CurrencyCode,
-      LastChangeAt,
+      LastChangedAt,
 
       /* Associations */
       _Travel  : redirected to ZCOL_C_TRAVEL,   //????

@@ -21,10 +21,10 @@ define root view entity ZCOL_C_TRAVEL_A
       CurrencyCode,
       Description,
       OverallStatus,
-      Createdby,
+      CreatedBy,
       Createdat,
-      Lastchangedby,
-      Lastchangedat,
+      LastChangedBy,
+      LastChangedAt,
 
       /* Associations */
       _Booking : redirected to composition child ZCOL_C_BOOKING_A,
