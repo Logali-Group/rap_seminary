@@ -1,5 +1,5 @@
-@EndUserText.label: 'Travel Approvers'
-define service ZCOL_SD_TRAVEL_A {
+@EndUserText.label: 'Travel Approval'
+define service ZCOL_C_V2_TRAVEL_A {
   expose ZCOL_C_TRAVEL_A as Travel;
   expose ZCOL_C_BOOKING_A as Booking;
   expose /DMO/I_Customer as Customer;

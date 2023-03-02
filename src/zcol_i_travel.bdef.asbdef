@@ -1,9 +1,10 @@
 managed implementation in class zbp_col_i_travel unique;
-strict ( 2 );
+//strict ( 2 );
 
 define behavior for zcol_i_travel alias Travel
 //implementation in class zbp_col_i_travel1 unique
 persistent table zcol_travel
+with additional save
 lock master
 authorization master ( instance )
 etag master LastChangedAt
@@ -14,7 +15,7 @@ etag master LastChangedAt
 
   field ( readonly ) LastChangedAt, LastChangedBy, CreatedAt, CreatedBy;
   field ( mandatory ) AgencyId, OverallStatus, BookingFee, CurrencyCode;
-  field ( features : instance ) TravelId;
+  field ( features : instance ) TravelId, OverallStatus;
   //field (numbering : managed ) TravelId;
 
   validation validateCustomer on save { field CustomerId; }

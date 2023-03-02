@@ -3,20 +3,20 @@ projection;
 
 define behavior for ZCOL_C_TRAVEL_A alias TravelProcessor
 {
-  use create;
-  use update;
-  use delete;
+  //use create;
+  //use update;
+  //use delete;
 
   use action acceptTravel;
   use action rejectTravel;
-  use action createTravelByTemplate;
+  //use action createTravelByTemplate;
 
   use association _Booking { create; }
 }
 
 define behavior for ZCOL_C_BOOKING_A alias Booking
 {
-  use update;
+  //use update;
   //use delete;
 
   use association _Travel;
