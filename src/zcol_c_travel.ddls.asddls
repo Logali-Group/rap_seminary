@@ -26,6 +26,8 @@ define root view entity ZCOL_C_TRAVEL
           LastChangedBy,
           LastChangedAt,
           @Semantics.amount.currencyCode: 'CurrencyCode'
+          @EndUserText.label: 'Discount'
+          @ObjectModel.virtualElementCalculatedBy: 'ABAP:ZCL_COL_VIRT_ELEM'
   virtual DiscountPrice : /dmo/total_price,
           /* Associations */
           _Booking : redirected to composition child ZCOL_C_BOOKING,

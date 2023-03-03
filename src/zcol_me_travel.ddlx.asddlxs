@@ -26,6 +26,7 @@ annotate entity ZCOL_C_TRAVEL with
                          label: 'Travel ID [1,...,99999999]' }]}
 
   @Search.defaultSearchElement: true
+  @Search.fuzzinessThreshold: 0.7
   TravelId;
 
   @UI: { lineItem: [{ position: 20, 
@@ -91,5 +92,10 @@ annotate entity ZCOL_C_TRAVEL with
   
   @UI.hidden: true
   LastChangedAt;
+  
+    @UI: { lineItem: [{ position: 60, 
+                      importance: #HIGH }],
+           identification: [{ position: 60 }] }
+  DiscountPrice;
 
 }

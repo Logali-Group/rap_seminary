@@ -18,14 +18,16 @@ etag master LastChangedAt
   field ( features : instance ) TravelId, OverallStatus;
   //field (numbering : managed ) TravelId;
 
-  validation validateCustomer on save { field CustomerId; }
-  validation validateDate on save { field BeginDate, EndDate; }
-  validation validateStatus on save { field OverallStatus; }
+  validation validateCustomer on save { create; field CustomerId; }
+  validation validateDate on save { create; field BeginDate, EndDate; }
+  validation validateStatus on save { create; field OverallStatus; }
 
   action ( features : instance ) acceptTravel result [1] $self;
   action ( features : instance ) rejectTravel result [1] $self;
 
   action createTravelByTemplate external 'CreateTravelWithCopy' result [1] $self;
+
+  determination calculateTravelKey on save { create; }
 
   association _Booking { create; }
 
@@ -59,7 +61,8 @@ etag master LastChangedAt
   update;
   delete;
 
-  field ( readonly ) TravelId, BookingId, LastChangedAt;
+  field ( readonly ) TravelId, LastChangedAt;
+  //field ( readonly: update ) BookingId;
   field ( mandatory ) CarrierId, ConnectionId, FlightDate, BookingStatus;
 
   validation validateStatus on save { field BookingStatus; }
@@ -82,7 +85,8 @@ etag master LastChangedAt
       BookingStatus = booking_status;
       LastChangedAt = last_changed_at;
     }
- }
+
+}
 
 define behavior for zcol_i_booksuppl alias BookingSupplement
 //implementation in class zbp_col_i_booksuppl3 unique
@@ -96,13 +100,12 @@ etag master LastChangedAt
   delete;
 
   field ( readonly ) TravelId, BookingId;
-  field ( mandatory ) SupplementId, Price;
+  field ( mandatory : create ) SupplementId, Price;
 
   determination calculateTotalFlightPrice on modify { field Price, CurrencyCode; }
 
   association _Travel;
   association _Booking;
-
   mapping for zcol_booksuppl
     {
       TravelId            = travel_id;
@@ -113,4 +116,5 @@ etag master LastChangedAt
       CurrencyCode        = currency_code;
       LastChangedAt       = last_changed_at;
     }
+
 }

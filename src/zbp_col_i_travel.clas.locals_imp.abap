@@ -25,6 +25,9 @@ class lhc_Travel definition inheriting from cl_abap_behavior_handler.
     methods validateStatus for validate on save
       importing keys for Travel~validateStatus.
 
+    methods calculateTravelKey for determine on save
+      importing keys for Travel~calculateTravelKey.
+
 endclass.
 
 class lhc_Travel implementation.
@@ -56,6 +59,23 @@ class lhc_Travel implementation.
   endmethod.
 
   method get_instance_authorizations.
+
+    data(lv_auth) = cond #( when cl_abap_context_info=>get_user_technical_name(  ) eq 'CB9980010502'
+                              then if_abap_behv=>auth-allowed
+                              else if_abap_behv=>auth-unauthorized ).
+
+    loop at keys assigning field-symbol(<ls_keys>).
+      append initial line to result assigning field-symbol(<ls_result>).
+      <ls_result> = value #( %key = <ls_keys>-%key
+                             %op-%update                    = lv_auth
+                             %delete                        = lv_auth
+                             %action-createTravelByTemplate = lv_auth
+                             %action-acceptTravel           = lv_auth
+                             %action-rejectTravel           = lv_auth
+                             %assoc-_Booking                = lv_auth ).
+    endloop.
+
+
   endmethod.
 
   method acceptTravel.
@@ -93,6 +113,16 @@ class lhc_Travel implementation.
 
     result = value #( for <fs_travel> in lt_entity_travel ( TravelId = <fs_travel>-TravelId
                                                             %param   = <fs_travel> ) ).
+
+    loop at lt_entity_travel assigning field-symbol(<ls_travel>).
+      append value #( TravelId = <ls_travel>-TravelId
+                      %msg = new_message( id                      = 'ZCOL_MSG'
+                                          number                  = '001'
+                                          v1                      = shift_left( val = <ls_travel>-TravelId sub = '0' )
+                                          severity                = if_abap_behv_message=>severity-success )
+                      %element-OverallStatus = if_abap_behv=>mk-on ) to reported-travel.
+    endloop.
+
 
   endmethod.
 
@@ -201,6 +231,15 @@ class lhc_Travel implementation.
 
     result = value #( for <fs_travel> in lt_entity_travel ( TravelId = <fs_travel>-TravelId
                                                             %param   = <fs_travel> ) ).
+
+    loop at lt_entity_travel assigning field-symbol(<ls_travel>).
+      append value #( TravelId = <ls_travel>-TravelId
+                      %msg = new_message( id                      = 'ZCOL_MSG'
+                                          number                  = '002'
+                                          v1                      = shift_left( val = <ls_travel>-TravelId sub = '0' )
+                                          severity                = if_abap_behv_message=>severity-success )
+                     %element-OverallStatus = if_abap_behv=>mk-on ) to reported-travel.
+    endloop.
 
   endmethod.
 
@@ -321,6 +360,35 @@ class lhc_Travel implementation.
 
   endmethod.
 
+  method calculateTravelKey.
+
+    read entities of zcol_i_travel
+        in local mode
+        entity Travel
+        fields ( TravelId )
+        with corresponding #(  keys )
+         result data(lt_travel).
+
+*    delete lt_travel where TravelId is not initial.
+*
+*    check lt_travel is not initial.
+
+    "Get max travelID
+    select single from zcol_travel fields max( travel_id ) into @data(lv_max_travelid).
+
+    "update involved instances
+    modify entities of zcol_i_travel
+           in local mode
+           entity Travel
+           update
+           fields ( TravelId )
+           with value #( for <row> in lt_travel index into i (
+                              %key     = <row>-%key
+                              TravelId = lv_max_travelid + i ) )
+     reported data(lt_reported).
+
+  endmethod.
+
 endclass.
 
 class lhc_Booking definition inheriting from cl_abap_behavior_handler.
@@ -337,9 +405,45 @@ endclass.
 class lhc_Booking implementation.
 
   method calculateTotalFlightPrice.
+
+    if keys is not initial.
+      zcl_col_travel_helper=>calculate_price(
+        it_travel_id = value #( for groups <booking> of booking_key in keys
+                                    group by booking_key-TravelId
+                                    without members ( <booking> ) ) ).
+    endif.
+
   endmethod.
 
   method validateStatus.
+
+    read entities of zcol_i_travel
+         in local mode
+         entity Booking
+         fields ( TravelId )
+         with corresponding #(  keys )
+         result data(lt_travel).
+
+    loop at lt_travel assigning field-symbol(<ls_travel>).
+
+      case <ls_travel>-BookingStatus.
+        when 'O'.  " Open
+        when 'N'.  " New
+        when 'X'.  " Cancelled
+        when 'A'.  " Accepted
+        when others.
+          append value #( %key = <ls_travel>-%key ) to failed-travel.
+
+          append value #( %key = <ls_travel>-%key
+                          %msg = new_message( id       = /dmo/cx_flight_legacy=>status_is_not_valid-msgid
+                                              number   = /dmo/cx_flight_legacy=>status_is_not_valid-msgno
+                                              v1       = <ls_travel>-BookingStatus
+                                              severity = if_abap_behv_message=>severity-error )
+                          %element-OverallStatus       = if_abap_behv=>mk-on ) to reported-travel.
+      endcase.
+
+    endloop.
+
   endmethod.
 
 endclass.
@@ -355,6 +459,14 @@ endclass.
 class lhc_BookingSupplement implementation.
 
   method calculateTotalFlightPrice.
+
+    if keys is not initial.
+      zcl_col_travel_helper=>calculate_price(
+        it_travel_id = value #( for groups <supplement> of supplement_key in keys
+                                    group by supplement_key-TravelId
+                                    without members ( <supplement> ) ) ).
+    endif.
+
   endmethod.
 
 endclass.
@@ -419,11 +531,48 @@ class lsc_ZCOL_I_TRAVEL implementation.
 
     endloop.
 
-    check not lt_log is initial.
+    delete lt_log where travel_id is initial.
 
-    if not create-travel is initial or
-       not update-travel is initial.
-      modify zcol_log from table @lt_log.
+    if not lt_log is initial.
+      if not create-travel is initial or
+         not update-travel is initial.
+        modify zcol_log from table @lt_log.
+      endif.
+    endif.
+
+* ****Supplements***with unmanaged save***
+
+    data lt_supplements type table of zcol_booksuppl.
+
+    if not create-bookingsupplement is initial.
+      lt_supplements = corresponding #( create-bookingsupplement mapping travel_id     = TravelId
+                                                                         booking_id    = BookingId
+                                                                         supplement_id = SupplementId
+                                                                         price         = Price
+                                                                         currency_code = CurrencyCode ).
+      loop at lt_supplements assigning field-symbol(<ls_supplements>).
+        get time stamp field  <ls_supplements>-last_changed_at.
+      endloop.
+      insert zcol_booksuppl from table @lt_supplements.
+    endif.
+
+    if not update-bookingsupplement is initial.
+      lt_supplements = corresponding #( update-bookingsupplement mapping travel_id     = TravelId
+                                                                         booking_id    = BookingId
+                                                                         supplement_id = SupplementId
+                                                                         price         = Price
+                                                                         currency_code = CurrencyCode ).
+      loop at lt_supplements assigning <ls_supplements>.
+        get time stamp field  <ls_supplements>-last_changed_at.
+      endloop.
+      update zcol_booksuppl from table @lt_supplements.
+    endif.
+
+    if not delete-bookingsupplement is initial.
+      lt_supplements = corresponding #( delete-bookingsupplement mapping travel_id     = TravelId
+                                                                         booking_id    = BookingId
+                                                                         supplement_id = BookingSupplementId ).
+      delete zcol_booksuppl from table @lt_supplements.
     endif.
 
   endmethod.
