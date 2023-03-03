@@ -14,16 +14,18 @@ endclass.
 class zcl_col_commit_entities implementation.
   method if_oo_adt_classrun~main.
 
-    data(lv_travel_id)     = '00000011'. " Valid travel ID
+    data(lv_travel_id)     = '00000054'. " Valid travel ID
     data(lv_description)   = 'Changed Travel Agency'.
-    data(lv_new_agency_id) = '070017'. " Valid agency ID
+    data(lv_new_agency_id) = '070017'.
+    data(lv_total_price)   = '5235.50'. " Valid agency ID
 
     modify entity zcol_i_travel
            update
            fields ( AgencyId Description )
            with value #( ( TravelId    = lv_travel_id
                            AgencyId    = lv_new_agency_id
-                           Description = lv_description ) )
+                           Description = lv_description
+                           TotalPrice  = lv_total_price ) )
            failed data(ls_failed)
            reported data(ls_reported).
 

@@ -110,13 +110,16 @@ class zcl_col_travel_helper implementation.
     endloop.
 
     modify entities of zcol_i_travel
-          entity Travel
-                 update from value #( for travel in lt_read_travel (
-                   TravelId               = travel-TravelId
-                   TotalPrice             = travel-TotalPrice
-                   %control-TotalPrice    = if_abap_behv=>mk-on ) )
-                   failed data(lt_failed)
-                   reported data(lt_reported).
+           entity Travel
+           update
+           fields ( TotalPrice )
+           with value #( for travel in lt_read_travel (
+                            TravelId            = travel-TravelId
+                            TotalPrice          = travel-TotalPrice
+                            %control-TotalPrice = if_abap_behv=>mk-on ) )
+           failed data(lt_failed)
+           reported data(lt_reported).
 
   endmethod.
 endclass.
+

@@ -25,8 +25,8 @@ class lhc_Travel definition inheriting from cl_abap_behavior_handler.
     methods validateStatus for validate on save
       importing keys for Travel~validateStatus.
 
-    methods calculateTravelKey for determine on save
-      importing keys for Travel~calculateTravelKey.
+*    methods calculateTravelKey for determine on save
+*      importing keys for Travel~calculateTravelKey.
 
 endclass.
 
@@ -360,34 +360,34 @@ class lhc_Travel implementation.
 
   endmethod.
 
-  method calculateTravelKey.
+*  method calculateTravelKey.
 
-    read entities of zcol_i_travel
-        in local mode
-        entity Travel
-        fields ( TravelId )
-        with corresponding #(  keys )
-         result data(lt_travel).
-
-*    delete lt_travel where TravelId is not initial.
+*    read entities of zcol_i_travel
+*        in local mode
+*        entity Travel
+*        fields ( TravelId )
+*        with corresponding #(  keys )
+*         result data(lt_travel).
 *
-*    check lt_travel is not initial.
+**    delete lt_travel where TravelId is not initial.
+**
+**    check lt_travel is not initial.
+*
+*    "Get max travelID
+*    select single from zcol_travel fields max( travel_id ) into @data(lv_max_travelid).
+*
+*    "update involved instances
+*    modify entities of zcol_i_travel
+*           in local mode
+*           entity Travel
+*           update
+*           fields ( TravelId )
+*           with value #( for <row> in lt_travel index into i (
+*                              %key     = <row>-%key
+*                              TravelId = lv_max_travelid + i ) )
+*     reported data(lt_reported).
 
-    "Get max travelID
-    select single from zcol_travel fields max( travel_id ) into @data(lv_max_travelid).
-
-    "update involved instances
-    modify entities of zcol_i_travel
-           in local mode
-           entity Travel
-           update
-           fields ( TravelId )
-           with value #( for <row> in lt_travel index into i (
-                              %key     = <row>-%key
-                              TravelId = lv_max_travelid + i ) )
-     reported data(lt_reported).
-
-  endmethod.
+*  endmethod.
 
 endclass.
 
@@ -484,96 +484,96 @@ class lsc_ZCOL_I_TRAVEL implementation.
 
   method save_modified.
 
-    data: lt_log type standard table of zcol_log.
+**    data: lt_log type standard table of zcol_log.
+**
+**    data(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
+**
+***    create-
+***    delete-
+***    update-
+**
+**    if not create-travel is initial.
+**      lt_log = corresponding #( create-travel mapping travel_id = TravelId ).
+**    elseif not update-travel is initial.
+**      lt_log = corresponding #( update-travel mapping travel_id = TravelId ).
+**    endif.
+**
+**    loop at lt_log assigning field-symbol(<ls_log_c>).
+**      get time stamp field <ls_log_c>-created_at.
+**
+**      if not create-travel is initial.
+**        <ls_log_c>-changing_operation = 'CREATE'.
+**        read table create-travel
+**             with table key entity
+**             components TravelId = <ls_log_c>-travel_id
+**             into data(ls_travel).
+**      elseif not update-travel is initial.
+**        <ls_log_c>-changing_operation = 'UPDATE'.
+**        read table update-travel
+**             with table key entity
+**             components TravelId = <ls_log_c>-travel_id
+**             into ls_travel.
+**      endif.
+**
+**      if sy-subrc eq 0.
+**        if ls_travel-%control-BookingFee eq cl_abap_behv=>flag_changed.
+**          try.
+**              <ls_log_c>-change_id = cl_system_uuid=>create_uuid_x16_static(  ).
+**            catch cx_uuid_error into data(lx_uuid_error).
+**              "handle exception
+**              "lx_uuid_error->get_text(  ).
+**          endtry.
+**          <ls_log_c>-changed_field_name = 'BookingFee'.
+**          <ls_log_c>-changed_value = ls_travel-BookingFee.
+**          <ls_log_c>-user_mod = lv_user.
+**        endif.
+**      endif.
+**
+**    endloop.
+**
+**    delete lt_log where travel_id is initial.
 
-    data(lv_user) = cl_abap_context_info=>get_user_technical_name(  ).
-
-*    create-
-*    delete-
-*    update-
-
-    if not create-travel is initial.
-      lt_log = corresponding #( create-travel mapping travel_id = TravelId ).
-    elseif not update-travel is initial.
-      lt_log = corresponding #( update-travel mapping travel_id = TravelId ).
-    endif.
-
-    loop at lt_log assigning field-symbol(<ls_log_c>).
-      get time stamp field <ls_log_c>-created_at.
-
-      if not create-travel is initial.
-        <ls_log_c>-changing_operation = 'CREATE'.
-        read table create-travel
-             with table key entity
-             components TravelId = <ls_log_c>-travel_id
-             into data(ls_travel).
-      elseif not update-travel is initial.
-        <ls_log_c>-changing_operation = 'UPDATE'.
-        read table update-travel
-             with table key entity
-             components TravelId = <ls_log_c>-travel_id
-             into ls_travel.
-      endif.
-
-      if sy-subrc eq 0.
-        if ls_travel-%control-BookingFee eq cl_abap_behv=>flag_changed.
-          try.
-              <ls_log_c>-change_id = cl_system_uuid=>create_uuid_x16_static(  ).
-            catch cx_uuid_error into data(lx_uuid_error).
-              "handle exception
-              "lx_uuid_error->get_text(  ).
-          endtry.
-          <ls_log_c>-changed_field_name = 'BookingFee'.
-          <ls_log_c>-changed_value = ls_travel-BookingFee.
-          <ls_log_c>-user_mod = lv_user.
-        endif.
-      endif.
-
-    endloop.
-
-    delete lt_log where travel_id is initial.
-
-    if not lt_log is initial.
-      if not create-travel is initial or
-         not update-travel is initial.
-        modify zcol_log from table @lt_log.
-      endif.
-    endif.
+*    if not lt_log is initial.
+*      if not create-travel is initial or
+*         not update-travel is initial.
+*        modify zcol_log from table @lt_log.
+*      endif.
+*    endif.
 
 * ****Supplements***with unmanaged save***
 
-    data lt_supplements type table of zcol_booksuppl.
-
-    if not create-bookingsupplement is initial.
-      lt_supplements = corresponding #( create-bookingsupplement mapping travel_id     = TravelId
-                                                                         booking_id    = BookingId
-                                                                         supplement_id = SupplementId
-                                                                         price         = Price
-                                                                         currency_code = CurrencyCode ).
-      loop at lt_supplements assigning field-symbol(<ls_supplements>).
-        get time stamp field  <ls_supplements>-last_changed_at.
-      endloop.
-      insert zcol_booksuppl from table @lt_supplements.
-    endif.
-
-    if not update-bookingsupplement is initial.
-      lt_supplements = corresponding #( update-bookingsupplement mapping travel_id     = TravelId
-                                                                         booking_id    = BookingId
-                                                                         supplement_id = SupplementId
-                                                                         price         = Price
-                                                                         currency_code = CurrencyCode ).
-      loop at lt_supplements assigning <ls_supplements>.
-        get time stamp field  <ls_supplements>-last_changed_at.
-      endloop.
-      update zcol_booksuppl from table @lt_supplements.
-    endif.
-
-    if not delete-bookingsupplement is initial.
-      lt_supplements = corresponding #( delete-bookingsupplement mapping travel_id     = TravelId
-                                                                         booking_id    = BookingId
-                                                                         supplement_id = BookingSupplementId ).
-      delete zcol_booksuppl from table @lt_supplements.
-    endif.
+*    data lt_supplements type table of zcol_booksuppl.
+*
+*    if not create-bookingsupplement is initial.
+*      lt_supplements = corresponding #( create-bookingsupplement mapping travel_id     = %control-TravelId
+*                                                                         booking_id    = %control-BookingId
+*                                                                         supplement_id = %control-SupplementId
+*                                                                         price         = Price
+*                                                                         currency_code = CurrencyCode ).
+*      loop at lt_supplements assigning field-symbol(<ls_supplements>).
+*        get time stamp field  <ls_supplements>-last_changed_at.
+*      endloop.
+*      insert zcol_booksuppl from table @lt_supplements.
+*    endif.
+*
+*    if not update-bookingsupplement is initial.
+*      lt_supplements = corresponding #( update-bookingsupplement mapping travel_id     = %control-TravelId
+*                                                                         booking_id    = %control-BookingId
+*                                                                         supplement_id = %control-SupplementId
+*                                                                         price         = Price
+*                                                                         currency_code = CurrencyCode ).
+*      loop at lt_supplements assigning <ls_supplements>.
+*        get time stamp field  <ls_supplements>-last_changed_at.
+*      endloop.
+*      update zcol_booksuppl from table @lt_supplements.
+*    endif.
+*
+*    if not delete-bookingsupplement is initial.
+*      lt_supplements = corresponding #( delete-bookingsupplement mapping travel_id     = TravelId
+*                                                                         booking_id    = BookingId
+*                                                                         supplement_id = BookingSupplementId ).
+*      delete zcol_booksuppl from table @lt_supplements.
+*    endif.
 
   endmethod.
 

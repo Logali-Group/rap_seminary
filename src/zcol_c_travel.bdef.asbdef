@@ -25,6 +25,7 @@ define behavior for ZCOL_C_BOOKING alias Booking
 
 define behavior for ZCOL_C_BOOKSUPPL alias BookingSupplement
 {
+
   use update;
   use delete;
 
